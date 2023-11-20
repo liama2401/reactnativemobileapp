@@ -1,80 +1,78 @@
-/** Component made by Liam Atkinson **/
 import "expo-router/entry";
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, Dimensions, TextInput, FlatList, TouchableOpacity, Keyboard, TouchableWithoutFeedback, SafeAreaView } from 'react-native';
+
+const windowHeight = Dimensions.get('window').height;
 
 const AutocompleteDropdown = ({ dataSet, onSelectItem }) => {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
-  const dropdownRef = useRef(null);
+  const [suggestionsVisible, setSuggestionsVisible] = useState(false);
+
   const handleInputChange = (text) => {
-    
     setQuery(text);
 
-    // Filter suggestions based on the input text
     const filteredSuggestions = dataSet.filter(item =>
-      item.title.toLowerCase().includes(text.toLowerCase())
+      item.name.toLowerCase().includes(text.toLowerCase())
     );
 
     setSuggestions(filteredSuggestions);
-    if(!text)
-        setSuggestions(dataSet);
-
   };
 
   const handleItemPress = (item) => {
-    setSelectedItem(item);
-    setQuery(item.title);
-    setSuggestions([]);
+      //setSelectedItem(item);
+     setQuery('');
+    setSuggestionsVisible(false);
     onSelectItem(item);
+    
   };
 
   const renderSuggestionItem = ({ item }) => (
     <TouchableOpacity        
-     ref={dropdownRef}
-     onPress={() => handleItemPress(item)}
-     className ="flex bg-gray-50 border border-1 border-black text-start">
+      onPress={() => handleItemPress(item)}
+      className="flex bg-gray-50 border border-1 border-black text-start">
       <Text className="p-2">
-        {item.title}
+        {item.name}
       </Text>
     </TouchableOpacity>
   );
+
   const closeDropdown = () => {
-    if (dropdownRef.current) {
-      dropdownRef.current.blur();
-      setSuggestions([]);
-    }
+    Keyboard.dismiss();
+    setSuggestionsVisible(false);
   };
 
+  const handleInputClick = () => {
+    setSuggestionsVisible(true);
+    setSuggestions(dataSet);
+
+  };
 
   return (
     <TouchableWithoutFeedback onPress={closeDropdown}>
-
-    <View className="flex justify-center items-center">
-      <TextInput
-        ref={dropdownRef}
-        className ="border w-2/3 p-3 border-1 border-black rounded-t-md"
-        placeholder="Type to search..."
-        placeholderTextColor={"grey"}
-        value={query}
-        onChangeText={handleInputChange}
-      />
-
-      <FlatList
-        className="w-2/3"
-        data={suggestions}
-        renderItem={renderSuggestionItem}
-        keyExtractor={(item) => item.id}
-      />
-
-      {selectedItem && (
-        <View>
-          <Text>Selected Item: {selectedItem.title}</Text>
+      <SafeAreaView className="flex items-center">
+        <View className="w-2/3">
+          <TextInput
+          
+            className="border p-3 border-1 border-black rounded-t-md"
+            placeholder="Type to search..."
+            placeholderTextColor="grey"
+            value={query}
+            onChangeText={handleInputChange}
+            onFocus={handleInputClick}
+          />
+          {suggestionsVisible && (
+            <SafeAreaView style={{ maxHeight: windowHeight / 3 }}>
+              <FlatList
+                data={suggestions}
+                renderItem={renderSuggestionItem}
+                keyExtractor={(item) => item.name.toString()}
+              />
+            </SafeAreaView>
+          )}
         </View>
-      )}   
-
-    </View>
+      </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 };

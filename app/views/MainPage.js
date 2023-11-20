@@ -1,62 +1,86 @@
 import "expo-router/entry";
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { Text, View } from 'react-native';
-import { useQuery } from 'react-query';
-import { useState } from "react";
-import  AutocompleteDropdown  from "../components/AutocompleteDropdown";
-
-const queryClient = new QueryClient();
-
-const fetchData = async (name) => {
-  const response = await fetch(`https://api.api-ninjas.com/v1/dogs?name=${name}`, {
-    method: 'GET',
-    headers: {
-      'X-Api-Key': 'uSfmOqhbDgz6LcunZY64uw==lAYtrdv5SNoaGLIb',
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Network response was not ok');
-  }
-
-  return response.json();
-};
+import React,  { useState } from 'react';
+import { SafeAreaView, Text, View, FlatList, ScrollView } from 'react-native';
+import { QueryClient, QueryClientProvider, useQuery } from 'react-query';
+import AutocompleteDropdown from "../components/AutocompleteDropdown";
 
 const MainPage = () => {
-  
   const [selectedItem, setSelectedItem] = useState(null);
-  const dataSet = [
-    { id: '1', title: 'Apple' },
-    { id: '2', title: 'Banana' },
-    { id: '3', title: 'Cherry' },
-  ];
+
 
   const handleSelectItem = (item) => {
+    setSelectedItem(item.name);
     console.log('Selected Item:', item);
   };
-  const name = 'golden retriever';
-  const { data, error, isLoading } = useQuery(['dogs', name], () => fetchData(name));
+
+  const fetchData = async () => {
+    const response = await fetch(`https://api.thedogapi.com/v1/breeds?limit=100`, {
+      method: 'GET',
+      headers: {
+        'X-Api-Key': 'live_PeTnIhCDd48mrM51tSyeirco99TgWSElZ5ILEoOfZBWXVUvKHwdh6QnN5f3Mr2nv',
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    return response.json();
+  };
+
+  const fetchDogNinjas = async (name) => {
+    const response = await fetch(`https://api.api-ninjas.com/v1/dogs?name=` + {name}, {
+      method: 'GET',
+      headers: {
+        'X-Api-Key': 'uSfmOqhbDgz6LcunZY64uw==lAYtrdv5SNoaGLIb',
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    return response.json();
+  };
+
+
+  const queryClient = new QueryClient();
+
+  const { data, error, isLoading } = useQuery(['dogs'], () => fetchData(), {
+    queryClient,
+  });
+  const { dataNinjas, errorNinjas, isLoadingNinjas } = useQuery(['dogs2'], () => fetchDogNinjas(selectedItem), {
+    queryClient,
+    enabled: selectedItem !== null,
+  });
 
   if (isLoading) {
-    return <p>Loading...</p>;
+    return <Text>Loading...</Text>;
   }
 
   if (error) {
     console.error('Error:', error);
-    return <p>Error fetching data</p>;
+    return <Text>Error fetching data</Text>;
   }
 
-  console.log('Result:', data);
+
   return (
-    <QueryClientProvider client={queryClient}>
+      <View>
+         <AutocompleteDropdown dataSet={data} onSelectItem={handleSelectItem} />
+         
+         <Text>{selectedItem}</Text>
 
-  <View >
-    <AutocompleteDropdown dataSet={dataSet} onSelectItem={handleSelectItem} />
-  </View>    
-</QueryClientProvider>
+      </View>
+     
   );
-}
+};
 
-export default MainPage;
+const App = () => (
+  <QueryClientProvider client={new QueryClient()}>
+    <MainPage />
+  </QueryClientProvider>
+);
+
+export default App;
