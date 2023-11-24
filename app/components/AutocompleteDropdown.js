@@ -1,6 +1,7 @@
 import "expo-router/entry";
 import React, { useState, useRef } from 'react';
 import { View, Text, Dimensions, TextInput, FlatList, TouchableOpacity, Keyboard, TouchableWithoutFeedback, SafeAreaView } from 'react-native';
+import { FullWindowOverlay } from "react-native-screens";
 
 const windowHeight = Dimensions.get('window').height;
 
@@ -31,7 +32,7 @@ const AutocompleteDropdown = ({ dataSet, onSelectItem }) => {
   const renderSuggestionItem = ({ item }) => (
     <TouchableOpacity        
       onPress={() => handleItemPress(item)}
-      className="flex bg-gray-50 border border-1 border-black text-start">
+      className="flex bg-gray-50 border border-1 border-black text-star w-full">
       <Text className="p-2">
         {item.name}
       </Text>
@@ -51,10 +52,9 @@ const AutocompleteDropdown = ({ dataSet, onSelectItem }) => {
 
   return (
     <TouchableWithoutFeedback onPress={closeDropdown}>
-      <SafeAreaView className="flex items-center">
+      <SafeAreaView className="flex z-10 items-center">
         <View className="w-2/3">
           <TextInput
-          
             className="border p-3 border-1 border-black rounded-t-md"
             placeholder="Type to search..."
             placeholderTextColor="grey"
@@ -63,7 +63,7 @@ const AutocompleteDropdown = ({ dataSet, onSelectItem }) => {
             onFocus={handleInputClick}
           />
           {suggestionsVisible && (
-            <SafeAreaView style={{ maxHeight: windowHeight / 3 }}>
+            <SafeAreaView style={{ maxHeight: windowHeight / 3, zIndex:10, elevation:2}}>
               <FlatList
                 data={suggestions}
                 renderItem={renderSuggestionItem}
